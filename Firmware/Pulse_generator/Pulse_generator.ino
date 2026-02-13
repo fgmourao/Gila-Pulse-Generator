@@ -100,7 +100,7 @@ unsigned long lastPulseTime = 0;
 const unsigned long debounceDelay = 200; // Noise filter time for buttons
 
 // =================================================================================
-// 3. MENU STRUCTURE (Defining the Interface)
+// 3. MENU STRUCTURE
 // =================================================================================
 //  3 types of menu items:
 // VALUE: A number you can change (e.g., 100 Hz).
@@ -124,7 +124,7 @@ menu_item menu[NUM_ITEMS];
 int menu_idx = 0;    // Which page are we looking at?
 
 // =================================================================================
-// 4. FUNCTION PROTOTYPES (Telling the compiler what's coming)
+// 4. FUNCTION PROTOTYPES
 // =================================================================================
 void update_calculations();
 void update_lcd();
