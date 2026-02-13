@@ -44,7 +44,7 @@
 #include <LiquidCrystal_I2C.h>  // Library for the Display
 
 // =================================================================================
-// 1. HARDWARE CONNECTIONS (Where to plug wires)
+// 1. HARDWARE CONNECTIONS
 // =================================================================================
 #define TRIGGER_PIN 3          // Input for External Trigger
 
@@ -55,11 +55,6 @@
 #define SINGLE_PULSE_PIN 6     // The manual "Fire" button for single pulse
 
 #define OUTPUT_PIN 7           // The output pin
-
-/* * NOTE ON PORTD MAPPING:
- * Instead of using "digitalWrite" (which is slow), I wrote directly to the 
- * processor's register (PORTD). Bit 7 corresponds to Pin 7.
- */
 
 // Initialize the Screen and the Knob
 LiquidCrystal_I2C lcd(0x27, 16, 2); 
