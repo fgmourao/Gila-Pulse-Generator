@@ -75,7 +75,7 @@ volatile bool triggerEvent = false;     // Did we receive an external signal?
 volatile long pulsesRemaining = 0;      // How many pulses are left to fire in this burst?
 
 // Safety and Logic flags
-volatile bool isTriggerMode = false;    // Are we listening to the external pin?
+volatile bool isTriggerMode = false;    // External pin?
 int last_edge_mode = -1;                // Remembers if we trigger on Rising or Falling edge
 bool armed_for_start = false;           // Helps start the system instantly without delay
 
@@ -184,7 +184,7 @@ void setup() {
   menu[3] = {"State",  ACTION, 0, 0, 0, {}, "OFF"}; 
   menu[4] = {"Freq",   VALUE,  1000, 10, 50000, {}, "Hz"}; 
   
-  // [5] COUNT: Integer number (Pulsos)
+  // [5] COUNT: Integer number (Pulses)
   menu[5] = {"Count",  VALUE,  10, 1, 999, {}, ""}; 
   
   // [6] GAP: Integer Time (Burst Interval). 1000 = 1000ms.
