@@ -41,8 +41,8 @@ The design prioritizes the timing engine at the hardware and firmware levels. To
 
 ## Author
 
-Flavio Mourao (mourao.fg@gmail.com) 
-Federal University of Minas Gerais, Brazil
+Flavio Mourao (mourao.fg@gmail.com)  
+Federal University of Minas Gerais, Brazil  
 
-Development started: February 2026
-Last update: March 2026
+Development started: February 2026  
+Last update: March 2026  
