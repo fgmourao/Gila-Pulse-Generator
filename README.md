@@ -33,6 +33,6 @@ The design prioritizes the timing engine at the hardware and firmware levels. To
 
 ---
 
-## Note on Usage and Constraints:
+## Note on Usage and Constraints
 
 ** Detailed usage instructions, as well as comprehensive operational constraints and hardware limitations are thoroughly documented in the official user manual.
