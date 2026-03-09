@@ -9,30 +9,40 @@ The design prioritizes the timing engine at the hardware and firmware levels. To
 
 ## 1. Firmware Specifications
 
-**Stimulation Modes:** Multi-engine pulse generation supporting Continuous (periodic), Burst (trains with inter-burst gaps), and Non-Periodic Stimulation (NPS) with randomized intra-window intervals.
+- **Stimulation Modes:** Multi-engine pulse generation supporting Continuous (periodic), Burst (trains with inter-burst gaps), and Non-Periodic Stimulation (NPS) with randomized intra-window intervals.
 
-**Time Base & Granularity:** Microsecond-level timing relying on the 16 MHz system clock. Due to AVR hardware prescaling, the fundamental temporal resolution (software polling step) advances in 4 µs increments.
+- **Time Base & Granularity:** Microsecond-level timing relying on the 16 MHz system clock. Due to AVR hardware prescaling, the fundamental temporal resolution (software polling step) advances in 4 µs increments.
 
-**Frequency Range & Resolution:** Programmable output frequency from 0.1 Hz to 500 Hz, with a 0.01 Hz resolution capability for precise slow-wave protocols.
+- **Frequency Range & Resolution:** Programmable output frequency from 0.1 Hz to 500 Hz, with a 0.01 Hz resolution capability for precise slow-wave protocols.
 
-**Pulse Width (PW) Range:** Configurable pulse durations. The reliable lower bound is mode-dependent: 50 µs in NPS mode, where timing is governed by a blocking call, and 100 µs in Continuous and Burst modes, where pulse width is enforced via polling. The upper bound is dynamically limited by the selected frequency period.
+- **Pulse Width (PW) Range:** Configurable pulse durations. The reliable lower bound is mode-dependent: 50 µs in NPS mode, where timing is governed by a blocking call, and 100 µs in Continuous and Burst modes, where pulse width is enforced via polling. The upper bound is dynamically limited by the selected frequency period.
 
-**Output Control & Switching Latency:** Direct port manipulation using PORTD, bit 7 (PD7) to minimize software overhead, achieving a theoretical minimum switching latency of ≈125 ns (limited by the ATmega328P single instruction cycle).
+- **Output Control & Switching Latency:** Direct port manipulation using PORTD, bit 7 (PD7) to minimize software overhead, achieving a theoretical minimum switching latency of ≈125 ns (limited by the ATmega328P single instruction cycle).
 
-**Output Logic Level:** 5 V TTL-compatible digital output.
+- **Output Logic Level:** 5 V TTL-compatible digital output.
 
-**External Triggering & Synchronization:** Integrated hardware interrupt support via Pin D3 (INT1), allowing synchronization with external lab equipment. The system supports user-selectable Rising or Falling edge detection with a sub-microsecond hardware response latency. The interrupt service routine includes a hardware interlock that rejects incoming trigger events while the output pin is actively HIGH to prevent pulse overlap.
+- **External Triggering & Synchronization:** Integrated hardware interrupt support via Pin D3 (INT1), allowing synchronization with external lab equipment. The system supports user-selectable Rising or Falling edge detection with a sub-microsecond hardware response latency. The interrupt service routine includes a hardware interlock that rejects incoming trigger events while the output pin is actively HIGH to prevent pulse overlap.
 
-**Single-Shot Diagnostic:** Dedicated hardware-level manual pulse capability via Pin D6. Governed by a software-based debounce routine and a logical safety interlock that physically prevents manual firing while the primary stimulation engine is active (State: ON).
+- **Single-Shot Diagnostic:** Dedicated hardware-level manual pulse capability via Pin D6. Governed by a software-based debounce routine and a logical safety interlock that physically prevents manual firing while the primary stimulation engine is active (State: ON).
 
-**Duty Cycle Safety Clamp:** Automated logic constraint that prevents 100% duty cycle (DC latching). If the requested PW exceeds the period, the firmware enforces a mandatory low-phase cutoff (PW_max = T − 10 µs).
+- **Duty Cycle Safety Clamp:** Automated logic constraint that prevents 100% duty cycle (DC latching). If the requested PW exceeds the period, the firmware enforces a mandatory low-phase cutoff (PW_max = T − 10 µs).
 
-**Parameter Storage:** Non-volatile EEPROM integration used to store 13 user-configurable operational parameters, preserving experimental setups across power cycles.
+- **Parameter Storage:** Non-volatile EEPROM integration used to store 13 user-configurable operational parameters, preserving experimental setups across power cycles.
 
-**Serial Communication:** UART-based serial interface (9600 baud) for logging and reporting of operational state and elapsed timestamps, enabling external data acquisition, real-time monitoring, and protocol reproducibility.
+- **Serial Communication:** UART-based serial interface (9600 baud) for logging and reporting of operational state and elapsed timestamps, enabling external data acquisition, real-time monitoring, and protocol reproducibility.
 
 ---
 
 ## Note on Usage and Constraints
 
 ** Detailed usage instructions, as well as comprehensive operational constraints and hardware limitations are thoroughly documented in the official user manual.
+
+---
+
+## Author
+
+Flavio Mourao (mourao.fg@gmail.com) 
+Federal University of Minas Gerais, Brazil
+
+Development started: February 2026
+Last update: March 2026
