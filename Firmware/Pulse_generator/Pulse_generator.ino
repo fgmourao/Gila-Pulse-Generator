@@ -2,38 +2,43 @@
  * PROJECT: Gila Monster Pulse Generator
  * VERSION: 1.0 
  * AUTHOR:  Flavio Mourao - Feb, 2026
-
- * * DESCRIPTION:
- * Pulse generator
- * It runs on Arduino Uno and generates electrical pulses in three different modes.
- 
- * MODES OF OPERATION:
- * 1. Continuous:  Regular pulses at a specific and periodic frequency (Hz).
- * 2. Burst:       Groups of pulses (trains) separated by a pause (Gap).
- * 3. NPS:         "Non-Periodic Stimulation". A mode where pulses occur randomly within a 1-second window.
- *                  https://doi.org/10.1016/j.yebeh.2019.106609
- *                  https://doi.org/10.1016/j.yebeh.2008.09.006
- 
- * KEY FEATURES:
- * - Precision: Uses microsecond timing for accuracy.
- * - Split Intervals: Separate settings for Burst Gaps and NPS Min Intervals.
- * - Safety: Software locks to prevent dangerous duty cycles (100% ON).
- * - External Trigger: Can be started by another machine via Pin D3.
  *
- * MENU REFERENCE (What you see on the screen):
- * [0] Mode   : Manual (Auto-run) or Trigger (Waits for signal).
- * [1] Edge   : Signal type for Trigger (Rising or Falling).
- * [2] Type   : The Engine (Cont, Burst, or NPS).
+ * DESCRIPTION:
+ * Precision neurostimulation pulse generator.
+ * Designed for Arduino Uno (ATmega328P), it generates high-fidelity electrical pulses for biological tissues across three specialized operational modes.
+ *
+ * MODES OF OPERATION:
+ * 1. Continuous : Regular, periodic pulse trains at a specific frequency.
+ * 2. Burst      : Clustered groups of pulses separated by a customizable inter-burst gap.
+ * 3. NPS        : "Non-Periodic Stimulation". A stochastic mode where pulses occur randomly within a 1-second window, obeying a minimum interval.
+ * Ref: https://doi.org/10.1016/j.yebeh.2019.106609
+ * Ref: https://doi.org/10.1016/j.yebeh.2008.09.006
+ *
+ * KEY FEATURES & SAFETY:
+ * - Time Base       : Microsecond resolution (4 µs hardware polling steps).
+ * - Safety Clamps   : Hardcoded limits prevent 100% Duty Cycle (latched output) and restrict minimum pulse width to 50 µs to prevent jitter.
+ * - Single-Shot     : Hardware-debounced manual trigger for calibration/diagnostics.
+ * - Non-Volatile    : Automatic EEPROM storage for all experimental parameters.
+ *
+ * HARDWARE I/O & SYNCHRONIZATION :
+ * - OUTPUT (Pin D7) : Main 5V TTL stimulation pulse to drive the output stage.
+ * - INPUT  (Pin D3) : External Trigger IN. Sub-microsecond interrupt-driven logic to start protocols synchronously with external behavior software.
+ * - MANUAL (Pin D6) : Single-Shot manual firing button input.
+ *
+ * MENU REFERENCE (LCD Interface):
+ * [0] Mode   : Manual (Auto-run) or Trigger (Waits for external D3 signal).
+ * [1] Edge   : Signal type for External Trigger (Rising or Falling edge).
+ * [2] Type   : The Generation Engine (Cont, Burst, or NPS).
  * [3] State  : The Master Switch (ON / OFF).
- * [4] Freq   : Frequency in Hz (0.1 to 500 Hz. Only for Cont./Burst).
- * [5] Count  : How many pulses? (Per Burst or Per Second in NPS).
- * [6] Gap    : Time between Bursts (Integer ms). Used in BURST mode.
- * [7] ITImin : Minimum time between random pulses (Decimal ms). Used in NPS.
- * [8] Width  : Logic for pulse duration (Fixed time vs Duty Cycle %).
- * [9] Pulse  : The duration of the pulse (High time).
- * [10] Timer : Auto-stop the system (0 = disabled).
- * [11] Save  : Saves settings to memory (EEPROM).
- * [12] Comm  : Sends protocol to USB/Computer.
+ * [4] Freq   : Frequency (0.10 to 500.00 Hz). Used in Cont./Burst modes.
+ * [5] Count  : Pulse amount (Pulses per Burst, or Pulses per Second in NPS).
+ * [6] Gap    : Inter-burst pause (ms). Used in BURST mode.
+ * [7] ITImin : Minimum time between random pulses (ms). Used in NPS mode.
+ * [8] Width  : Logic for pulse duration (Fixed time [ms] vs Duty Cycle [%]).
+ * [9] Pulse  : The High-time duration (Min: 0.05 ms or 0.01%).
+ * [10] Timer : Auto-stop safety timer for the session (0 = disabled).
+ * [11] Save  : Saves current settings to EEPROM.
+ * [12] Comm  : Serial dump of protocol parameters and NPS simulation data to PC.
  * ======================================================================================
  */
 
@@ -196,7 +201,7 @@ void setup() {
   menu[8] = {"Width",  OPTION, 0, 0, 1, {"Fixed", "D.Cycle"}, ""};
   
   // [9] PULSE: Decimal Time. 500 = 5.00ms.
-  menu[9] = {"Pulse",  VALUE,  500, 1, 100000, {}, "ms"};  
+  menu[9] = {"Pulse",  VALUE,  500, 5, 100000, {}, "ms"};  // --> 5 (0.05 ms = 50 µs) to 1000 ms
   
   // [10] TIMER: Integer Time. 0 = Disabled.
   menu[10]= {"Timer",  VALUE,  0, 0, 999999, {}, "ms"}; 
@@ -473,15 +478,24 @@ void update_calculations() {
   if (menu[8].value == 0) { 
     long lim = (period_us / 10) - 10;
     menu[9].lim_max = (lim < 1) ? 1 : lim;
+    menu[9].lim_min = 5;
     menu[9].suffix = "ms";
   } else { 
     menu[9].lim_max = 9990;
+    menu[9].lim_min = 1; // --> 0.01% Duty Cycle
     menu[9].suffix = "% ";
   }
-  if (menu[9].value > menu[9].lim_max) menu[9].value = menu[9].lim_max; 
-  
+  if (menu[9].value < menu[9].lim_min) menu[9].value = menu[9].lim_min;
+  if (menu[9].value > menu[9].lim_max) menu[9].value = menu[9].lim_max;
+
   // Final Pulse Width calculation
   pulse_on_us = (menu[8].value == 0) ? menu[9].value * 10 : (period_us * (uint32_t)menu[9].value) / 10000UL;
+
+  // HARDWARE SAFETY CLAMP: Regardless of the calculated value (especially for Duty Cycle),
+  // this prevents the microcontroller from firing a pulse narrower than 50 µs.
+  if (pulse_on_us < 50) {
+      pulse_on_us = 50; 
+  }
 }
 
 // =================================================================================
