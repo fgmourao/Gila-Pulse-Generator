@@ -47,7 +47,7 @@ The most viable implementation is a hybrid approach:
 - Timer2 ISR → guaranteed rising edge, independent of loop()
 - Timer1 ISR → falling edge check after pulse_on_us
 - loop()     → UI only (LCD, encoder, menus)  
-- 
+ 
 The primary challenge is the NPS mode, which currently relies on random() and state management inside loop() — neither of which is safely portable to an ISR context without a full rewrite of the stochastic scheduling engine. This architectural migration is therefore scoped as a v2.0 effort.
 
 ## Author
