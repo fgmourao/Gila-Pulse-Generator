@@ -21,7 +21,7 @@ The design prioritizes the timing engine at the hardware and firmware levels. To
 
 **Output Logic Level:** 5 V TTL-compatible digital output.
 
-**External Triggering & Synchronization:** Integrated hardware interrupt support via Pin D3 (INT1), allowing synchronization with external lab equipment. The system supports user-selectable Rising or Falling edge detection with a sub-microsecond hardware response latency.
+**External Triggering & Synchronization:** Integrated hardware interrupt support via Pin D3 (INT1), allowing synchronization with external lab equipment. The system supports user-selectable Rising or Falling edge detection with a sub-microsecond hardware response latency. The interrupt service routine includes a hardware interlock that rejects incoming trigger events while the output pin is actively HIGH to prevent pulse overlap.
 
 **Single-Shot Diagnostic:** Dedicated hardware-level manual pulse capability via Pin D6. Governed by a software-based debounce routine and a logical safety interlock that physically prevents manual firing while the primary stimulation engine is active (State: ON).
 
@@ -29,7 +29,7 @@ The design prioritizes the timing engine at the hardware and firmware levels. To
 
 **Parameter Storage:** Non-volatile EEPROM integration used to store 13 user-configurable operational parameters, preserving experimental setups across power cycles.
 
-**Serial Communication:** UART-based serial interface (115200 baud) for logging and reporting of operational state and elapsed timestamps, enabling external data acquisition, real-time monitoring, and protocol reproducibility.
+**Serial Communication:** UART-based serial interface (9600 baud) for logging and reporting of operational state and elapsed timestamps, enabling external data acquisition, real-time monitoring, and protocol reproducibility.
 
 ---
 
