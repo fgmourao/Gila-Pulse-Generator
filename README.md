@@ -38,6 +38,17 @@ The design prioritizes the timing engine at the hardware and firmware levels. To
 ** Detailed usage instructions, as well as comprehensive operational constraints and hardware limitations are thoroughly documented in the official user manual.
 
 ---
+Future Development
+v2.0 — Hardware Timer Architecture  
+
+The current firmware relies on a polling-based timing engine inside loop(), which makes pulse generation susceptible to I2C blocking overhead from the LCD interface (see "Stop-Click Hazard", Manual Section 6). A natural evolution would be migrating the pulse engine to a hardware timer ISR, completely decoupling stimulus generation from the UI layer.  
+The proposed architecture uses Timer2 in CTC mode to control the output pin via ISR, which preempts all other operations including I2C transactions. This would eliminate the "Stop-Click Hazard" by design and improve timing resolution from 4 µs to ~0.5 µs.  
+The most viable implementation is a hybrid approach:
+- Timer2 ISR → guaranteed rising edge, independent of loop()
+- Timer1 ISR → falling edge check after pulse_on_us
+- loop()     → UI only (LCD, encoder, menus)  
+- 
+The primary challenge is the NPS mode, which currently relies on random() and state management inside loop() — neither of which is safely portable to an ISR context without a full rewrite of the stochastic scheduling engine. This architectural migration is therefore scoped as a v2.0 effort.
 
 ## Author
 
