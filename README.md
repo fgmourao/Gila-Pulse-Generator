@@ -38,7 +38,7 @@ The design prioritizes the timing engine at the hardware and firmware levels. To
 ** Detailed usage instructions, as well as comprehensive operational constraints and hardware limitations are thoroughly documented in the official user manual.
 
 ---
-Future Development
+## Future Development
 v2.0 — Hardware Timer Architecture  
 
 The current firmware relies on a polling-based timing engine inside loop(), which makes pulse generation susceptible to I2C blocking overhead from the LCD interface (see "Stop-Click Hazard", Manual Section 6). A natural evolution would be migrating the pulse engine to a hardware timer ISR, completely decoupling stimulus generation from the UI layer.  
