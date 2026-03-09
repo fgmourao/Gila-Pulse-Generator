@@ -4,9 +4,9 @@
  * AUTHOR:  Flavio Mourao - Feb, 2026
  *
  * DESCRIPTION:
- * Precision neurostimulation pulse generator.
- * Designed for Arduino Uno (ATmega328P), it generates high-fidelity electrical pulses for biological tissues across three specialized operational modes.
- *
+ * Pulse generator designed for Arduino Uno (ATmega328P) across three operational modes:
+ * Continuous, Burst, and Non-Periodic Stimulation (NPS).
+ 
  * MODES OF OPERATION:
  * 1. Continuous : Regular, periodic pulse trains at a specific frequency.
  * 2. Burst      : Clustered groups of pulses separated by a customizable inter-burst gap.
@@ -478,7 +478,7 @@ void update_calculations() {
   if (menu[8].value == 0) { 
     long lim = (period_us / 10) - 10;
     menu[9].lim_max = (lim < 1) ? 1 : lim;
-    menu[9].lim_min = 5;
+    menu[9].lim_min = (menu[2].value == 2) ? 5 : 10;
     menu[9].suffix = "ms";
   } else { 
     menu[9].lim_max = 9990;
@@ -491,12 +491,14 @@ void update_calculations() {
   // Final Pulse Width calculation
   pulse_on_us = (menu[8].value == 0) ? menu[9].value * 10 : (period_us * (uint32_t)menu[9].value) / 10000UL;
 
-  // HARDWARE SAFETY CLAMP: Regardless of the calculated value (especially for Duty Cycle),
-  // this prevents the microcontroller from firing a pulse narrower than 50 µs.
-  if (pulse_on_us < 50) {
-      pulse_on_us = 50; 
+  // HARDWARE SAFETY CLAMP: Mode-dependent minimum pulse width.
+  // NPS uses blocking delayMicroseconds() — 50 µs is reliable.
+  // Continuous/Burst use polling — 100 µs absorbs ISR preemption overhead.
+  if (menu[2].value == 2) {
+      if (pulse_on_us < 50) pulse_on_us = 50;
+  } else {
+      if (pulse_on_us < 100) pulse_on_us = 100;
   }
-}
 
 // =================================================================================
 // 10. UI HANDLERS (Screen and Buttons)

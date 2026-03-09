@@ -3,7 +3,7 @@
 
 To meet the need for a pulse generator capable of triggering external instruments in neurostimulation protocols with multiple frequency patterns, the Gila Monster v1.0 was developed. Although numerous DIY solutions are available in online repositories, this project intentionally adopts a minimalist hardware design, centered on an Arduino Uno built around the ATmega328P microcontroller.
 
-The design prioritizes the timing engine at the hardware and firmware levels. To ensure that time-critical pulse generation is isolated from user interface operations, the firmware implements a dynamic UI-bypass architecture. While the LCD display inherently relies on synchronous I2C communication, the system intelligently suspends all visual updates during active stimulation (Static Operation Mode). This hardware-software synergy guarantees that UI-related polling does not introduce latency, I2C blocking overhead, or timing jitter into the output signal.
+The design prioritizes the timing engine at the hardware and firmware levels. To ensure that time-critical pulse generation is isolated from user interface operations, the firmware implements a dynamic UI-bypass architecture. While the LCD display inherently relies on synchronous I2C communication, the system suspends all visual updates during active stimulation (Static Operation Mode and no encoder interaction). This hardware-software synergy guarantees that UI-related polling does not introduce latency, I2C blocking overhead, or timing jitter into the output signal.
 
 ---
 
@@ -15,7 +15,7 @@ The design prioritizes the timing engine at the hardware and firmware levels. To
 
 **Frequency Range & Resolution:** Programmable output frequency from 0.1 Hz to 500 Hz, with a 0.01 Hz resolution capability for precise slow-wave protocols.
 
-**Pulse Width (PW) Range:** Configurable pulse durations. To ensure uncorrupted signal integrity and avoid collision with the 250 µs background ISR preemption, the hardcoded reliable lower bound is 50 µs. The upper bound is dynamically limited by the selected frequency period (up to 999.99 ms).
+**Pulse Width (PW) Range:** Configurable pulse durations. The reliable lower bound is mode-dependent: 50 µs in NPS mode, where timing is governed by a blocking call, and 100 µs in Continuous and Burst modes, where pulse width is enforced via polling. The upper bound is dynamically limited by the selected frequency period.
 
 **Output Control & Switching Latency:** Direct port manipulation using PORTD, bit 7 (PD7) to minimize software overhead, achieving a theoretical minimum switching latency of ≈125 ns (limited by the ATmega328P single instruction cycle).
 
