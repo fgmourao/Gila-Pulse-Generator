@@ -3,7 +3,7 @@
 
 To meet the need for a pulse generator capable of triggering external instruments in neurostimulation protocols with multiple frequency patterns, the Gila Monster v1.0 was developed. Although numerous DIY solutions are available in online repositories, this project intentionally adopts a minimalist hardware design, centered on an Arduino Uno built around the ATmega328P microcontroller.
 
-The design prioritizes the timing engine at the hardware and firmware levels. To ensure that time-critical pulse generation is isolated from user interface operations, the firmware implements a dynamic UI-bypass architecture. While the LCD display inherently relies on synchronous I2C communication, the system suspends all visual updates during active stimulation (Static Operation Mode and no encoder interaction). This hardware-software synergy guarantees that UI-related polling does not introduce latency, I2C blocking overhead, or timing jitter into the output signal.
+The design prioritizes the timing engine at the hardware and firmware levels. To ensure that time-critical pulse generation is isolated from user interface operations, the firmware implements a dynamic UI-bypass architecture. While the LCD display inherently relies on synchronous I2C communication, the system suspends all visual updates during active stimulation (Static Operation Mode and no encoder interaction).
 
 ---
 
@@ -11,7 +11,7 @@ The design prioritizes the timing engine at the hardware and firmware levels. To
 
 - **Stimulation Modes:** Multi-engine pulse generation supporting Continuous (periodic), Burst (trains with inter-burst gaps), and Non-Periodic Stimulation (NPS) with randomized intra-window intervals.
 
-- **Time Base & Granularity:** Microsecond-level timing relying on the 16 MHz system clock. Due to AVR hardware prescaling, the fundamental temporal resolution (software polling step) advances in 4 µs increments.
+- **Time Base:** Microsecond-level timing relying on the 16 MHz system clock. Due to AVR hardware prescaling, the fundamental temporal resolution (software polling step) advances in 4 µs increments.
 
 - **Frequency Range & Resolution:** Programmable output frequency from 0.1 Hz to 500 Hz, with a 0.01 Hz resolution capability for precise slow-wave protocols.
 
