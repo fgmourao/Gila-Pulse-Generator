@@ -1,11 +1,12 @@
-/* * ======================================================================================
+/** ======================================================================================
+ * @file    Pulse_generator.ino
  * PROJECT: Gila Monster Pulse Generator
  * VERSION: 1.0 
  * AUTHOR:  Flavio Mourao - Feb, 2026
- *
+ 
  * DESCRIPTION:
- * Pulse generator designed for Arduino Uno (ATmega328P) across three operational modes:
- * Continuous, Burst, and Non-Periodic Stimulation (NPS).
+ * @brief: Pulse generator designed for Arduino Uno (ATmega328P) across three operational modes:
+ *         Continuous, Burst, and Non-Periodic Stimulation (NPS).
  
  * MODES OF OPERATION:
  * 1. Continuous : Regular, periodic pulse trains at a specific frequency.
@@ -13,18 +14,18 @@
  * 3. NPS        : "Non-Periodic Stimulation". A stochastic mode where pulses occur randomly within a 1-second window, obeying a minimum interval.
  * Ref: https://doi.org/10.1016/j.yebeh.2019.106609
  * Ref: https://doi.org/10.1016/j.yebeh.2008.09.006
- *
+ 
  * KEY FEATURES & SAFETY:
  * - Time Base       : Microsecond resolution (4 µs hardware polling steps).
  * - Safety Clamps   : Hardcoded limits prevent 100% Duty Cycle (latched output) and restrict minimum pulse width to 50 µs to prevent jitter.
  * - Single-Shot     : Hardware-debounced manual trigger for calibration/diagnostics.
  * - Non-Volatile    : Automatic EEPROM storage for all experimental parameters.
- *
+ 
  * HARDWARE I/O & SYNCHRONIZATION :
  * - OUTPUT (Pin D7) : Main 5V TTL stimulation pulse to drive the output stage.
  * - INPUT  (Pin D3) : External Trigger IN. Sub-microsecond interrupt-driven logic to start protocols synchronously with external behavior software.
  * - MANUAL (Pin D6) : Single-Shot manual firing button input.
- *
+ 
  * MENU REFERENCE (LCD Interface):
  * [0] Mode   : Manual (Auto-run) or Trigger (Waits for external D3 signal).
  * [1] Edge   : Signal type for External Trigger (Rising or Falling edge).
