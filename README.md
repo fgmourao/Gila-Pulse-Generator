@@ -15,17 +15,17 @@ The design prioritizes the timing engine at both the hardware and firmware level
 
 - **Frequency Range & Resolution:** Programmable output frequency from 0.1 Hz to 500 Hz, with a 0.01 Hz resolution.
 
-- **Pulse Width (PW) Range:** Fixed time from 0.10 ms (Continuous and Burst) or 0.05 ms (NPS) up to 999.99 ms, in 0.01 ms steps, or Duty Cycle in 0.01 % steps. Measured edge accuracy is ±4 µs in all modes (Section 6.3).
+- **Pulse Width (PW) Range:** Fixed time from 0.10 ms (Continuous and Burst) or 0.05 ms (NPS) up to 999.99 ms, in 0.01 ms steps, or Duty Cycle in 0.01 % steps.
 
 - **Output Control & Switching Latency:** Direct port manipulation using PORTD, bit 7 (PD7) to minimize software overhead, achieving a theoretical minimum switching latency of ≈125 ns (limited by the ATmega328P single instruction cycle).
 
 - **Output Logic Level:** 5 V TTL-compatible digital output.
 
-- **External Triggering & Synchronization:** Hardware interrupt on Pin D3 (INT1) with user-selectable Rising or Falling edge detection. In Trigger mode, the external trigger then starts the whole programmed session, exactly as switching State ON does in Manual mode, and the session Timer is counted from the trigger. Triggers arriving while a session is running are ignored. The interrupt registers the event and the session starts in the main loop, with a measured trigger-to-output latency ~40 µs.
+- **External Triggering & Synchronization:** Hardware interrupt on Pin D3 (INT1) with user-selectable Rising or Falling edge detection. In Trigger mode, the external trigger starts the whole programmed session, exactly as switching State ON does in Manual mode, and the session Timer is counted from the trigger. Triggers arriving while a session is running are ignored. The interrupt registers the event and the session starts in the main loop, with a measured trigger-to-output latency ~40 µs.
 
 - **Single-Shot Diagnostic:** Manual pulse via Pin D6, debounced in firmware (100 ms of stable contact), delivering one pulse with the programmed width per press. Interlocked with the master state: operational only when State is OFF.
 
-- **Duty Cycle Safety Clamp:** The output always returns LOW for at least 100 µs between pulses, which prevents 100 % duty cycle (DC latching). The maximum pulse width is PWmax = T − 100 µs, applied to the displayed value.
+- **Duty Cycle Safety Clamp:** The output always returns LOW for at least 100 µs between pulses, which prevents 100 % duty cycle. The maximum pulse width is PWmax = T − 100 µs, applied to the displayed value.
 
 - **Parameter Storage:** Non-volatile EEPROM storage of the 13 operational parameters, protected by a signature. Absent or invalid data loads the default settings.
 
