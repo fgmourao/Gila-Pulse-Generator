@@ -1,8 +1,9 @@
 /* * ======================================================================================
  * PROJECT: Gila Monster Pulse Generator
  * VERSION: 1.0
- * AUTHOR:  Flavio Mourao - Feb, 2026
- *
+ * AUTHOR:  Flavio Mourao - Feb, 2024
+ * LAST UPDATE: Set, 2026
+
  * DESCRIPTION:
  * Pulse generator designed for Arduino Uno (ATmega328P) across three operational modes:
  * Continuous, Burst, and Non-Periodic Stimulation (NPS).
@@ -13,8 +14,8 @@
  * 3. NPS        : "Non-Periodic Stimulation". Pulses are placed within each 1-second window by a
  *                 sequential shrinking-window algorithm, yielding power-law distributed
  *                 inter-pulse intervals, obeying a minimum interval.
- * Ref: https://doi.org/10.1016/j.yebeh.2019.106609
- * Ref: https://doi.org/10.1016/j.yebeh.2008.09.006
+ *                  Ref: https://doi.org/10.1016/j.yebeh.2019.106609
+ *                  Ref: https://doi.org/10.1016/j.yebeh.2008.09.006 
  *
  * KEY FEATURES & SAFETY:
  * - Time Base       : Microsecond resolution (4 us steps). Pulse edges are placed by busy-waiting
@@ -36,9 +37,8 @@
  * - Burst (Manual)      : Count pulses at 1/Freq. Gap is the silence from the falling edge of the
  *                         last pulse to the rising edge of the next burst. Gap = 0: single burst.
  * - NPS (Manual)        : Count pulses in every 1-second window, windows back-to-back.
- * - Trigger mode       : switching State ON only arms the generator. The external trigger then
- *                         starts the whole programmed session, exactly as switching State ON does
- *                         in Manual mode, and the session Timer is counted from the trigger.
+ * - Trigger mode       :  The external trigger then starts the whole programmed session, exactly as 
+ *                         switching State ON does in Manual mode, and the session Timer is counted from the trigger.
  *                         Further triggers are ignored until the session ends; after that the
  *                         generator is armed again and the next trigger starts a new session.
  *                         With Timer = 0 a session has no end, so it runs until stopped.
@@ -90,6 +90,8 @@
 
 // Initialize the Screen and the Knob
 LiquidCrystal_I2C lcd(0x27, 16, 2);
+//LiquidCrystal_I2C lcd(0x3F, 16, 2);
+
 ClickEncoder encoder(ENCODER_PIN_B, ENCODER_PIN_A, ENCODER_PIN_BUTTON, 4);
 
 // =================================================================================
@@ -1078,4 +1080,4 @@ void eepromUpdateLong(int adr, long wert) {
 
 // =================================================================================
 // Listening: Sonic Youth - Starpower
-// Thu Feb 12 - 16:53
+// Thu Set 23, 2026 - 20:06
