@@ -3,19 +3,19 @@
 
 To meet the need for a pulse generator capable of triggering external instruments in neurostimulation protocols with multiple frequency patterns, the Gila Monster v1.0 was developed. Although numerous DIY solutions are available in online repositories, this project intentionally adopts a minimalist hardware design, centered on an Arduino Uno built around the ATmega328P microcontroller.
 
-The design prioritizes the timing engine at the firmware level, keeping time-critical pulse generation isolated from user interface operations. The interface is locked while a protocol is running (no LCD updates, no parameter editing), and each pulse edge is placed by a short busy-wait with interrupts masked, so that neither the display nor the interrupt service routines can delay the output signal.
+The design prioritizes the timing engine at the firmware level, keeping time-critical pulse generation.
 
 ---
 
 ## 1. Firmware Specifications
 
-- **Stimulation Modes:** Multi-engine pulse generation supporting Continuous (periodic), Burst (trains with inter-burst gaps), and Non-Periodic Stimulation (NPS) with randomized intra-window intervals.
+- **Stimulation Modes:** Multi-engine pulse generation supporting Continuous (periodic), Burst (trains with inter-burst gaps), and Non-Periodic Stimulation (NPS) with randomized intra-window intervals (for NPS, see https://doi.org/10.1016/j.yebeh.2019.106609).
 
 - **Time Base:** Microsecond-level timing relying on the 16 MHz system clock. Due to AVR hardware prescaling, the fundamental temporal resolution (software polling step) advances in 4 µs increments. Pulses are scheduled on an absolute time grid, so timing errors do not accumulate from one pulse to the next.
 
 - **Frequency Range & Resolution:** Programmable output frequency from 0.1 Hz to 500 Hz, with a 0.01 Hz resolution capability for precise slow-wave protocols.
 
-- **Pulse Width (PW) Range:** Configurable pulse durations, as a fixed time or as a duty cycle. The lower bound is mode-dependent: 50 µs in NPS mode and 100 µs in Continuous and Burst modes. The upper bound is dynamically limited by the selected frequency period, or by the minimum inter-stimulus interval in NPS mode. Measured edge accuracy is ±4 µs in all modes, the resolution of the time base.
+- **Pulse Width (PW) Range:** Configurable pulse durations, as a "fixed" time or as a duty cycle. The lower bound is mode-dependent: 50 µs in NPS mode and 100 µs in Continuous and Burst modes. The upper bound is dynamically limited by the selected frequency period, or by the minimum inter-stimulus interval in NPS mode. Measured edge accuracy is ±4 µs in all modes, the resolution of the time base.
 
 - **Output Control & Switching Latency:** Direct port manipulation using PORTD, bit 7 (PD7) to minimize software overhead, achieving a theoretical minimum switching latency of ≈125 ns (limited by the ATmega328P single instruction cycle).
 
@@ -55,5 +55,5 @@ The primary challenge is the NPS mode, which currently relies on random() and st
 Flavio Mourao (mourao.fg@gmail.com)  
 Federal University of Minas Gerais, Brazil  
 
-Development started: February 2026  
-Last update: March 2026  
+Development started: February 2024  
+Last update: Sep 2026  
