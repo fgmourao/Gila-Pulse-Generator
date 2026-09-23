@@ -36,10 +36,12 @@
  * - Burst (Manual)      : Count pulses at 1/Freq. Gap is the silence from the falling edge of the
  *                         last pulse to the rising edge of the next burst. Gap = 0: single burst.
  * - NPS (Manual)        : Count pulses in every 1-second window, windows back-to-back.
- * - Continuous (Trigger): one pulse per trigger.
- * - Burst (Trigger)     : one burst per trigger.
- * - NPS (Trigger)       : one 1-second window per trigger.
- * - Triggers arriving while a pulse, burst or NPS window is running are ignored.
+ * - Trigger mode       : switching State ON only arms the generator. The external trigger then
+ *                         starts the whole programmed session, exactly as switching State ON does
+ *                         in Manual mode, and the session Timer is counted from the trigger.
+ *                         Further triggers are ignored until the session ends; after that the
+ *                         generator is armed again and the next trigger starts a new session.
+ *                         With Timer = 0 a session has no end, so it runs until stopped.
  * - Timer               : only pulses whose rising edge is before the end of the session are
  *                         emitted (1 Hz with Timer = 10000 ms gives 10 pulses).
  * - NPS constraints     : Width is Fixed, Count x ITImin < 1000 ms, Pulse <= ITImin - 0.1 ms.
@@ -96,7 +98,7 @@ ClickEncoder encoder(ENCODER_PIN_B, ENCODER_PIN_A, ENCODER_PIN_BUTTON, 4);
 #define MIN_HIGH_US_STD   100UL   // Minimum pulse width, Cont/Burst
 #define MIN_HIGH_US_NPS    50UL   // Minimum pulse width, NPS
 #define MIN_LOW_US        100UL   // Minimum LOW time between two pulses
-#define SPIN_WINDOW_US    400UL   // If an edge is closer than this, busy-wait for it
+#define SPIN_WINDOW_US    200UL   // If an edge is closer than this, busy-wait for it
 #define LATE_TOLERANCE_US  50UL   // An edge later than this is counted as a timing fault
 #define NPS_STEP_GUARD_US 1000UL  // Only compute NPS timestamps when no edge is this close
 #define NPS_WINDOW_US  1000000UL  // NPS window: 1 second
@@ -128,7 +130,9 @@ bool train_active = false;              // A next rising edge is scheduled
 uint32_t next_pulse_us = 0;             // Scheduled time of the next rising edge
 long pulsesRemaining = 0;               // Pulses left in the current burst
 bool counted = false;                   // Current train has a finite number of pulses
-bool stop_requested = false;            // Stop as soon as the current pulse ends
+bool stop_requested = false;            // End the session as soon as the current pulse ends
+bool session_active = false;            // A programmed session is running
+bool power_off = false;                 // The stop also switches the generator OFF
 bool have_last_end = false;             // last_pulse_end_us is valid
 bool pending_finish = false;            // A pulse ended; on_pulse_finished() still has to run
 uint32_t last_pulse_end_us = 0;         // Falling edge time of the last pulse
@@ -199,6 +203,8 @@ void update_lcd();
 void handle_inputs();
 void stop_generation();
 void request_stop();
+void end_session();
+void start_session(uint32_t t0);
 void arm_engine();
 void handle_trigger();
 void service_pulse_start();
@@ -237,6 +243,7 @@ void triggerIsr() {
 // =================================================================================
 static inline void output_high() { PORTD |= (1 << PD7); }
 static inline void output_low()  { PORTD &= ~(1 << PD7); }
+
 
 // Busy-wait until micros() reaches t (wrap-safe)
 static inline void spin_until(uint32_t t) {
@@ -341,13 +348,17 @@ void loop() {
   // --- THE PULSE ENGINE ---
   if (generating) {
     // Session Timer: request a stop, the current pulse is allowed to finish
-    if (!stop_requested && session_over_at(micros())) request_stop();
+    if (session_active && !stop_requested && session_over_at(micros())) request_stop();
 
     service_pulse_end();
     if (pending_finish) { pending_finish = false; on_pulse_finished(); }
 
     if (stop_requested) {
-      if (!pulse_active) stop_generation();
+      // A clean stop lets the current pulse finish first
+      if (!pulse_active) {
+        if (power_off || !isTriggerMode) stop_generation();
+        else end_session();          // Trigger mode: stay armed for the next trigger
+      }
     } else {
       handle_trigger();
       service_pulse_start();
@@ -377,23 +388,50 @@ void arm_engine() {
   session_pulses = 0;
   timing_faults = 0;
 
-  int type = menu[2].value;
-  if (type == 2) {
+  session_active = false;
+  power_off = false;
+
+  if (menu[2].value == 2) {
     // First NPS vector is computed now (nothing is firing yet)
     nps_gen_reset(nps_pending);
     nps_gen_complete(nps_pending);
   }
 
-  // The session starts now; in Manual mode the first pulse is at exactly this instant
-  session_start_us = micros();
-  if (type == 2) {
-    if (!isTriggerMode) begin_nps_window(session_start_us);
-  } else if (!isTriggerMode) {
-    counted = (type == 1);
+  triggerEvent = false;
+
+  // In Manual mode the session starts right away. In Trigger mode the generator is only
+  // armed, and the session starts at the first trigger.
+  if (!isTriggerMode) start_session(micros());
+}
+
+// Starts the whole programmed session at time t0
+void start_session(uint32_t t0) {
+  session_start_us = t0;
+  session_active = true;
+  stop_requested = false;
+  pulse_active = false;
+
+  if (menu[2].value == 2) {
+    begin_nps_window(t0);
+  } else {
+    counted = (menu[2].value == 1);
     pulsesRemaining = counted ? menu[5].value : 0;
-    next_pulse_us = session_start_us;
+    next_pulse_us = t0;
     train_active = true;
   }
+}
+
+// Ends the session but keeps the generator armed for the next trigger
+void end_session() {
+  session_active = false;
+  train_active = false;
+  pulsesRemaining = 0;
+  stop_requested = false;
+  nps_window_open = false;
+  output_low();
+
+  // Prepare the first NPS vector of the next session while nothing is firing
+  if (menu[2].value == 2) { nps_gen_reset(nps_pending); nps_gen_complete(nps_pending); }
   triggerEvent = false;
 }
 
@@ -401,22 +439,8 @@ void arm_engine() {
 void handle_trigger() {
   if (!isTriggerMode || !triggerEvent) return;
   triggerEvent = false;
-  if (pulse_active || train_active) return;           // Still running: ignore
-
-  uint32_t now = micros();
-  if (have_last_end && (now - last_pulse_end_us) < MIN_LOW_US) return;
-
-  if (menu[2].value == 2) {
-    // NPS: one full 1 s window per trigger
-    if (nps_window_open && (int32_t)(now - nps_window_start_us) < (int32_t)NPS_WINDOW_US) return;
-    begin_nps_window(now);
-  } else {
-    // Cont: one pulse. Burst: Count pulses.
-    counted = true;
-    pulsesRemaining = (menu[2].value == 1) ? menu[5].value : 1;
-    next_pulse_us = now;
-    train_active = true;
-  }
+  if (session_active) return;         // A session is running: the trigger is ignored
+  start_session(micros());
 }
 
 // Places the rising edge of the next scheduled pulse
@@ -488,16 +512,17 @@ void service_pulse_end() {
   }
 
   output_low();
-  SREG = sreg;
   pulse_active = false;
   last_pulse_end_us = end_t;
   have_last_end = true;
   pending_finish = true;
+
+  SREG = sreg;
 }
 
 // Decides what comes after a pulse has ended
 void on_pulse_finished() {
-  if (stop_requested || isTriggerMode || train_active) return;
+  if (stop_requested || train_active) return;
 
   if (menu[2].value == 2) {
     // Manual NPS: next window starts exactly 1 s after the current one
@@ -521,6 +546,8 @@ void request_stop() {
 
 void stop_generation() {
   generating = false;
+  session_active = false;
+  power_off = false;
   menu[3].suffix = "OFF";
   output_low();
   val_change = true;
@@ -639,6 +666,7 @@ void check_single_pulse_btn() {
       spin_until(t + pulse_on_us);
       output_low();
       SREG = sreg;
+
     }
   }
 }
@@ -691,8 +719,7 @@ void update_calculations() {
 
   // --- Pulse width limits in microseconds ---
   uint32_t min_us = nps ? MIN_HIGH_US_NPS : MIN_HIGH_US_STD;
-  uint32_t max_us = nps ? ((uint32_t)menu[7].value * 1000UL - MIN_LOW_US)
-                        : (period_us - MIN_LOW_US);
+  uint32_t max_us = (nps ? ((uint32_t)menu[7].value * 1000UL) : period_us) - MIN_LOW_US;
 
   if (menu[8].value == 0) {
     // Fixed: value in units of 10 us, editor allows up to 999.99 ms
@@ -711,6 +738,7 @@ void update_calculations() {
   // Final Pulse Width (exactly what the LCD shows)
   if (menu[8].value == 0) pulse_on_us = (uint32_t)menu[9].value * 10UL;
   else pulse_on_us = (uint32_t)(((uint64_t)period_us * (uint32_t)menu[9].value) / 10000ULL);
+
 }
 
 // =================================================================================
@@ -741,7 +769,10 @@ void handle_inputs() {
 
   // --- LOCKED WHILE GENERATING: only a click on State (stop) is accepted, nothing is drawn ---
   if (generating) {
-    if (b == ClickEncoder::Clicked && menu_idx == 3 && !stop_requested) request_stop();
+    if (b == ClickEncoder::Clicked && menu_idx == 3 && !stop_requested) {
+      power_off = true;              // A click always switches the generator OFF
+      request_stop();
+    }
     return;
   }
 
