@@ -3,7 +3,7 @@
 
 To meet the need for a pulse generator capable of triggering external instruments in neurostimulation protocols with multiple frequency patterns, the Gila Monster v1.0 was developed. Although numerous DIY solutions are available in online repositories, this project intentionally adopts a minimalist hardware design, centered on an Arduino Uno built around the ATmega328P microcontroller.
 
-The design prioritizes the timing engine at both the hardware and firmware levels to ensure reliable, time-critical pulse generation.  <br>
+The design prioritizes the timing engine at both the hardware and firmware levels to ensure reliable, time-critical pulse generation.<br/>
 
 
 ## Firmware Specifications
@@ -28,12 +28,12 @@ The design prioritizes the timing engine at both the hardware and firmware level
 
 - **Parameter Storage:** Non-volatile EEPROM storage of the 13 operational parameters, protected by a signature. Absent or invalid data loads the default settings.
 
-- **Serial Communication:** UART interface (9600 baud) reporting the active configuration, the effective pulse timing in microseconds, a report of the last session and NPS simulation data for offline analysis.<br />
+- **Serial Communication:** UART interface (9600 baud) reporting the active configuration, the effective pulse timing in microseconds, a report of the last session and NPS simulation data for offline analysis.
 
 
 ## Note on Usage and Constraints
 
-Detailed usage instructions, as well as comprehensive operational constraints, hardware limitations and measured timing accuracy, are thoroughly documented in the official user manual.<br />
+Detailed usage instructions, as well as comprehensive operational constraints, hardware limitations and measured timing accuracy, are thoroughly documented in the official user manual.
 
 
 ## Future Development
@@ -46,11 +46,12 @@ The most viable implementation is a hybrid approach:
 - Timer1 ISR → falling edge check after pulse_on_us
 - loop()     → UI only (LCD, encoder, menus)  
  
-The primary challenge is the NPS mode, which currently relies on random() and state management inside loop(), neither of which is safely portable to an ISR context without a full rewrite of the stochastic scheduling engine. This architectural migration is therefore scoped as a v2.0 effort.<br />
+The primary challenge is the NPS mode, which currently relies on random() and state management inside loop(), neither of which is safely portable to an ISR context without a full rewrite of the stochastic scheduling engine. This architectural migration is therefore scoped as a v2.0 effort.
+
 
 ## Licence
 
-Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0).<br />
+Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0).
 
 ## Author
 
