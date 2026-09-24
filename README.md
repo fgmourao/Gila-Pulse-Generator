@@ -5,7 +5,6 @@ To meet the need for a pulse generator capable of triggering external instrument
 
 The design prioritizes the timing engine at both the hardware and firmware levels to ensure reliable, time-critical pulse generation.
 
----
 
 ## Firmware Specifications
 
