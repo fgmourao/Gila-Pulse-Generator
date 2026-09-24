@@ -3,7 +3,7 @@
 
 To meet the need for a pulse generator capable of triggering external instruments in neurostimulation protocols with multiple frequency patterns, the Gila Monster v1.0 was developed. Although numerous DIY solutions are available in online repositories, this project intentionally adopts a minimalist hardware design, centered on an Arduino Uno built around the ATmega328P microcontroller.
 
-The design prioritizes the timing engine at both the hardware and firmware levels to ensure reliable, time-critical pulse generation.  <br />
+The design prioritizes the timing engine at both the hardware and firmware levels to ensure reliable, time-critical pulse generation.  <br>
 
 
 ## Firmware Specifications
