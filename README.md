@@ -31,13 +31,12 @@ The design prioritizes the timing engine at both the hardware and firmware level
 
 - **Serial Communication:** UART interface (9600 baud) reporting the active configuration, the effective pulse timing in microseconds, a report of the last session and NPS simulation data for offline analysis.
 
----
 
 ## Note on Usage and Constraints
 
 Detailed usage instructions, as well as comprehensive operational constraints, hardware limitations and measured timing accuracy, are thoroughly documented in the official user manual.
 
----
+
 ## Future Development
 v2.0 — Hardware Timer Architecture  
 
