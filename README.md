@@ -6,6 +6,7 @@ To meet the need for a pulse generator capable of triggering external instrument
 The design prioritizes the timing engine at both the hardware and firmware levels to ensure reliable, time-critical pulse generation.
 
 
+
 ## Firmware Specifications
 
 - **Stimulation Modes:** Multi-engine pulse generation supporting Continuous (periodic), Burst (trains with inter-burst gaps), and Non-Periodic Stimulation (NPS) with randomized intra-window intervals (for NPS, see https://doi.org/10.1016/j.yebeh.2019.106609).
