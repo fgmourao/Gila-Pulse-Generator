@@ -7,7 +7,7 @@ The design prioritizes the timing engine at both the hardware and firmware level
 
 ---
 
-## 1. Firmware Specifications
+## Firmware Specifications
 
 - **Stimulation Modes:** Multi-engine pulse generation supporting Continuous (periodic), Burst (trains with inter-burst gaps), and Non-Periodic Stimulation (NPS) with randomized intra-window intervals (for NPS, see https://doi.org/10.1016/j.yebeh.2019.106609).
 
@@ -50,10 +50,16 @@ The most viable implementation is a hybrid approach:
  
 The primary challenge is the NPS mode, which currently relies on random() and state management inside loop(), neither of which is safely portable to an ISR context without a full rewrite of the stochastic scheduling engine. This architectural migration is therefore scoped as a v2.0 effort.
 
+## Licence
+
+Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0).
+
 ## Author
 
 Flavio Mourao (mourao.fg@gmail.com)  
-Federal University of Minas Gerais, Brazil  
+CNPq/MCTI/FNDCT Call No. 21/2024 — Grant No. 446467/2024-3
+Federal University of Minas Gerais, Brazil
+  
 
 Development started: February 2024  
 Last update: Sep 2026  

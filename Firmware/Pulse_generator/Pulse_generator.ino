@@ -1,8 +1,12 @@
-/* * ======================================================================================
+/* * 
  * PROJECT: Gila Monster Pulse Generator
  * VERSION: 1.0
- * AUTHOR:  Flavio Mourao - Feb, 2024
- * LAST UPDATE: Set, 2026
+ * AUTHOR:  Flavio Afonso Goncalves Mourao — mourao.fg@gmail.com
+            CNPq/MCTI/FNDCT Call No. 21/2024 — Grant No. 446467/2024-3
+            Federal University of Minas Gerais, Brazil
+
+ * DEVELOPMENT STARTED: February, 2024           
+ * LAST UPDATE: September, 2026
 
  * DESCRIPTION:
  * Pulse generator designed for Arduino Uno (ATmega328P) across three operational modes:
@@ -37,7 +41,7 @@
  * - Burst (Manual)      : Count pulses at 1/Freq. Gap is the silence from the falling edge of the
  *                         last pulse to the rising edge of the next burst. Gap = 0: single burst.
  * - NPS (Manual)        : Count pulses in every 1-second window, windows back-to-back.
- * - Trigger mode       :  The external trigger then starts the whole programmed session, exactly as 
+ * - Trigger mode        : The external trigger then starts the whole programmed session, exactly as 
  *                         switching State ON does in Manual mode, and the session Timer is counted from the trigger.
  *                         Further triggers are ignored until the session ends; after that the
  *                         generator is armed again and the next trigger starts a new session.
@@ -66,18 +70,19 @@
  * [10] Timer : Session length from switching ON (0 = disabled).
  * [11] Save  : Saves current settings to EEPROM.
  * [12] Comm  : Serial dump of parameters, last session report and NPS simulation data to PC.
- * ======================================================================================
  */
+// =================================================================================
+// LIBRARIES
 
-#include <ClickEncoder.h>       // Library for the Rotary Knob
-#include <TimerOne.h>           // Library for precise internal clock handling
-#include <EEPROM.h>             // Library to save settings when power is off
-#include <Wire.h>               // Library for LCD communication
-#include <LiquidCrystal_I2C.h>  // Library for the Display
+#include <ClickEncoder.h>       // Rotary Knob
+#include <TimerOne.h>           // Internal clock handling
+#include <EEPROM.h>             // Save settings when power is off
+#include <Wire.h>               // LCD communication
+#include <LiquidCrystal_I2C.h>  // Display
 
 // =================================================================================
 // 1. HARDWARE CONNECTIONS
-// =================================================================================
+
 #define TRIGGER_PIN 3          // Input for External Trigger
 
 #define ENCODER_PIN_A 2        // Knob Pin A. Rotary Encoder CLK
@@ -96,7 +101,7 @@ ClickEncoder encoder(ENCODER_PIN_B, ENCODER_PIN_A, ENCODER_PIN_BUTTON, 4);
 
 // =================================================================================
 // 2. CONSTANTS
-// =================================================================================
+
 #define MIN_HIGH_US_STD   100UL   // Minimum pulse width, Cont/Burst
 #define MIN_HIGH_US_NPS    50UL   // Minimum pulse width, NPS
 #define MIN_LOW_US        100UL   // Minimum LOW time between two pulses
@@ -111,7 +116,6 @@ ClickEncoder encoder(ENCODER_PIN_B, ENCODER_PIN_A, ENCODER_PIN_BUTTON, 4);
 
 // =================================================================================
 // 3. GLOBAL VARIABLES
-// =================================================================================
 
 // Helpers for the Menu System
 int edit_digit = 0;                     // Which digit are we editing? (1s, 10s, 100s...)
@@ -180,7 +184,7 @@ unsigned long btnChangeTime = 0;        // When the raw reading last changed
 
 // =================================================================================
 // 4. MENU STRUCTURE
-// =================================================================================
+
 enum menu_type { VALUE, ACTION, OPTION };
 
 typedef struct {
@@ -199,7 +203,7 @@ int menu_idx = 0;    // Which page are we looking at?
 
 // =================================================================================
 // 5. FUNCTION PROTOTYPES
-// =================================================================================
+
 void update_calculations();
 void update_lcd();
 void handle_inputs();
@@ -229,7 +233,6 @@ void eepromUpdateLong(int adr, long wert);
 
 // =================================================================================
 // 6. INTERRUPT SERVICE ROUTINES
-// =================================================================================
 
 // This runs automatically in the background to read the knob rotation
 void encoderTimerIsr() { encoder.service(); }
@@ -242,7 +245,7 @@ void triggerIsr() {
 
 // =================================================================================
 // 7. OUTPUT AND PRECISE WAIT HELPERS
-// =================================================================================
+
 static inline void output_high() { PORTD |= (1 << PD7); }
 static inline void output_low()  { PORTD &= ~(1 << PD7); }
 
@@ -262,7 +265,7 @@ static inline bool session_over_at(uint32_t t) {
 
 // =================================================================================
 // 8. SETUP (Runs once when you turn it on)
-// =================================================================================
+
 void setup() {
   // Configure Port D7 as Output
   DDRD |= (1 << DDD7);
@@ -334,7 +337,7 @@ void setup() {
 
 // =================================================================================
 // 9. MAIN LOOP
-// =================================================================================
+
 void loop() {
   handle_inputs(); // Check knob and buttons (does nothing visible while generating)
 
@@ -376,7 +379,6 @@ void loop() {
 
 // =================================================================================
 // 10. PULSE ENGINE
-// =================================================================================
 
 // Prepares the engine right after switching ON
 void arm_engine() {
@@ -563,7 +565,7 @@ void stop_generation() {
 
 // =================================================================================
 // 11. NPS LOGIC
-// =================================================================================
+
 // Sequential shrinking-window algorithm, split so that one timestamp can be generated
 // at a time (in the background, away from pulse edges).
 
@@ -630,7 +632,6 @@ void nps_background_step() {
 
 // =================================================================================
 // 12. HELPER FUNCTIONS
-// =================================================================================
 
 // Configures the Trigger Pin to react to Rising or Falling signal
 void update_interrupt_config() {
@@ -745,7 +746,6 @@ void update_calculations() {
 
 // =================================================================================
 // 13. UI HANDLERS (Screen and Buttons)
-// =================================================================================
 
 // Items that do not apply to the current configuration are skipped
 bool is_hidden(int idx) {
@@ -924,7 +924,7 @@ void update_cursor_position() {
 
 // =================================================================================
 // 14. EXECUTE ACTION (Switching ON/OFF, Saving, Comm)
-// =================================================================================
+
 // Only reached while NOT generating (the UI is locked during generation).
 void execute_action() {
 
@@ -1024,7 +1024,7 @@ void execute_action() {
     // ---------------------------------------------------------
     // PART 2: IF NPS MODE, GENERATE RAW SIMULATION DATA
     // (same generator the engine uses; windows back-to-back as in Manual mode)
-    // ---------------------------------------------------------
+
     if (type == 2) {
 
         // Calculate simulation duration based on the Timer parameter
@@ -1067,7 +1067,7 @@ void execute_action() {
 
 // =================================================================================
 // 15. EEPROM UTILS
-// =================================================================================
+
 long eepromReadLong(int adr) {
   long wert = 0;
   for (int i = 0; i < 4; i++) wert |= ((long)EEPROM.read(adr + i) & 0xFF) << (i*8);
