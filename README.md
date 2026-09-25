@@ -20,7 +20,7 @@ The design prioritizes the timing engine at both the hardware and firmware level
 
 - **Output Logic Level:** 5 V TTL-compatible digital output.
 
-- **External Triggering & Synchronization:** Hardware interrupt on Pin D3 (INT1) with user-selectable Rising or Falling edge detection. In Trigger mode, the external trigger starts the whole programmed session, exactly as switching State ON does in Manual mode, and the session Timer is counted from the trigger. Triggers arriving while a session is running are ignored. The interrupt registers the event and the session starts in the main loop, with a measured trigger-to-output latency ~40 µs.
+- **External Triggering & Synchronization:** Hardware interrupt on Pin D3 (INT1) with user-selectable Rising or Falling edge detection. In Trigger mode, the external trigger starts the whole programmed session, exactly as switching State ON does in Manual mode, and the session Timer is counted from the trigger. Triggers arriving while a session is running are ignored; when the session ends, the generator is armed again and the next trigger starts a new session. With Timer = 0 the session has no end and runs until stopped. The interrupt registers the event and the session starts in the main loop, with a measured trigger-to-output latency ~40 µs.
 
 - **Single-Shot Diagnostic:** Manual pulse via Pin D6, debounced in firmware (100 ms of stable contact), delivering one pulse with the programmed width per press. Interlocked with the master state: operational only when State is OFF.
 
@@ -29,6 +29,11 @@ The design prioritizes the timing engine at both the hardware and firmware level
 - **Parameter Storage:** Non-volatile EEPROM storage of the 13 operational parameters, protected by a signature. Absent or invalid data loads the default settings.
 
 - **Serial Communication:** UART interface (9600 baud) reporting the active configuration, the effective pulse timing in microseconds, a report of the last session and NPS simulation data for offline analysis.
+
+
+## Build
+
+Arduino IDE, board "Arduino Uno" (ATmega328P). Required libraries: ClickEncoder, TimerOne and LiquidCrystal_I2C.
 
 
 ## Note on Usage and Constraints
@@ -48,10 +53,6 @@ The most viable implementation is a hybrid approach:
  
 The primary challenge is the NPS mode, which currently relies on random() and state management inside loop(), neither of which is safely portable to an ISR context without a full rewrite of the stochastic scheduling engine. This architectural migration is therefore scoped as a v2.0 effort.
 
-
-## Licence
-
-Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0).
 
 ## Author
 
