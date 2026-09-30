@@ -1,0 +1,13 @@
+────────────────────────────────────────────────────
+  Received        19:42:12
+  Mode            Manual
+  Type            NPS
+  Pulse count     4
+  Minimum ITI     20 ms
+  Width mode      Fixed Time
+  Pulse width     0.10 ms (HIGH time 100 us)
+  Timer           60000 ms
+  Pulses fired    240
+  Timing faults   0
+  ITI samples     239
+────────────────────────────────────────────────────

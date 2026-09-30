@@ -36,12 +36,25 @@ The design prioritizes the timing engine at both the hardware and firmware level
 Arduino IDE, board "Arduino Uno" (ATmega328P). Required libraries: ClickEncoder, TimerOne and LiquidCrystal_I2C.
 
 
+## Serial Monitor
+
+`Py_GilaMonster_Monitor.py` is a companion application that reads the Comm report over USB and displays it: session parameters, pulse count and timing faults on one side, the inter-stimulus interval distribution on the other, with export of the values (.txt) and of the plots (.png). It is passive and never writes to the port.
+
+Opening a serial port resets the Arduino Uno (DTR auto-reset), so connect before switching the generator ON, or fit a 10 µF capacitor between RESET and GND to disable it.
+
+Requires PyQt5, pyserial, numpy and matplotlib.
+
+
 ## Note on Usage and Constraints
 
-Detailed usage instructions, as well as comprehensive operational constraints, hardware limitations and measured timing accuracy, are thoroughly documented in the official user manual.
-Bench validation results (pulse counts, edge timing and session behaviour) are reported in the accompanying bench test document.
+Detailed usage instructions, as well as comprehensive operational constraints, hardware limitations and measured timing accuracy, are documented in the user manual.
+Bench validation results (pulse counts, edge timing and session behaviour) are reported in the bench test document.
 
-## License to be defined
+
+## License
+
+- to be defined
+
 
 ## Future Development
 v2.0 — Hardware Timer Architecture  
