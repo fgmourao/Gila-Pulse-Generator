@@ -47,7 +47,9 @@ Bench validation results (pulse counts, edge timing and session behaviour) are r
 v2.0 — Hardware Timer Architecture  
 
 The current firmware relies on a polling-based timing engine inside loop(). Interference from the user interface is avoided by locking the interface during stimulation, and edge placement is protected by masking interrupts around each edge, but the resolution remains bound to the 4 µs step of the software time base.
+
 The proposed architecture uses Timer1 (16-bit) in CTC mode with the output pin driven by the compare units (OC1A/OC1B): the interrupt only programs the next action, while the pin itself is switched by hardware with 62.5 ns resolution, independently of interrupt latency. The encoder service moves to Timer2. This would remove the 4 µs quantization and the interrupt masking altogether, and would allow the interface to remain live during stimulation. The output would move from D7 to D9.
+
 The main challenges are periods longer than the 16-bit range of Timer1, which require chaining overflows in the interrupt, and the revalidation of the whole timing engine. NPS itself ports well, since the interval vector is already computed in the main loop and only consumed by the scheduler.
 
 
