@@ -39,19 +39,17 @@ Arduino IDE, board "Arduino Uno" (ATmega328P). Required libraries: ClickEncoder,
 ## Note on Usage and Constraints
 
 Detailed usage instructions, as well as comprehensive operational constraints, hardware limitations and measured timing accuracy, are thoroughly documented in the official user manual.
+Bench validation results (pulse counts, edge timing and session behaviour) are reported in the accompanying bench test document.
 
+## License to be defined
 
 ## Future Development
 v2.0 — Hardware Timer Architecture  
 
-The current firmware relies on a polling-based timing engine inside loop(). Interference from the user interface is avoided by locking the interface during stimulation, and edge placement is protected by masking interrupts around each edge, but the resolution remains bound to the 4 µs step of the software time base (see Manual). A natural evolution would be migrating the pulse engine to a hardware timer ISR, completely decoupling stimulus generation from the UI layer.  
-The proposed architecture uses Timer2 in CTC mode to control the output pin via ISR, which preempts all other operations. This would improve timing resolution from 4 µs to well below 1 µs and would allow the interface to remain live during stimulation.  
-The most viable implementation is a hybrid approach:
-- Timer2 ISR → guaranteed rising edge, independent of loop()
-- Timer1 ISR → falling edge check after pulse_on_us
-- loop()     → UI only (LCD, encoder, menus)  
- 
-The primary challenge is the NPS mode, which currently relies on random() and state management inside loop(), neither of which is safely portable to an ISR context without a full rewrite of the stochastic scheduling engine. This architectural migration is therefore scoped as a v2.0 effort.
+The current firmware relies on a polling-based timing engine inside loop(). Interference from the user interface is avoided by locking the interface during stimulation, and edge placement is protected by masking interrupts around each edge, but the resolution remains bound to the 4 µs step of the software time base.
+The proposed architecture uses Timer1 (16-bit) in CTC mode with the output pin driven by the compare units (OC1A/OC1B): the interrupt only programs the next action, while the pin itself is switched by hardware with 62.5 ns resolution, independently of interrupt latency. The encoder service moves to Timer2. This would remove the 4 µs quantization and the interrupt masking altogether, and would allow the interface to remain live during stimulation. The output would move from D7 to D9.
+The main challenges are periods longer than the 16-bit range of Timer1, which require chaining overflows in the interrupt, and the revalidation of the whole timing engine. NPS itself ports well, since the interval vector is already computed in the main loop and only consumed by the scheduler.
+
 
 
 ## Author
